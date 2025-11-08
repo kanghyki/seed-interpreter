@@ -1,0 +1,11 @@
+let a = "Hello, world";
+
+let i = 0;
+
+while (i < 5) {
+    print a;
+}
+
+function sum(a, b) {
+    return a + b;
+}
