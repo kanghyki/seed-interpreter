@@ -1,3 +1,5 @@
+package seed;
+
 enum TokenType {
     // Single word token
     LEFT_PAREN, RIGHT_PAREN,
