@@ -66,10 +66,17 @@ public class GenerateAst {
     private static void defineType(PrintWriter writer, String baseName, String className, String fields) {
         // static class
         write(writer, 1, "static class " + className + " extends " + baseName + " {");
+
+        // fields
+        String[] fieldList = fields.split(", ");
+        for (String field : fieldList) {
+            write(writer, 2, "final " + field + ";");
+        }
+        writer.println();
+
         // constructor
         write(writer, 2, className + "(" + fields + ") {");
 
-        String[] fieldList = fields.split(", ");
         for (String field : fieldList) {
             String name = field.split(" ")[1];
             write(writer, 3, "this." + name + " = " + name + ";");
@@ -82,12 +89,6 @@ public class GenerateAst {
         write(writer, 2, "<R> R accept(Visitor<R> visitor) {");
         write(writer, 3, "return visitor.visit" + className + baseName + "(this);");
         write(writer, 2, "}");
-
-        // fields
-        writer.println();
-        for (String field : fieldList) {
-            write(writer, 2, "final " + field + ";");
-        }
         write(writer, 1, "}");
         writer.println();
     }
