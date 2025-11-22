@@ -12,6 +12,11 @@ class AstPrinter {
         }
 
         @Override
+        public String visitTernaryExpr(Expr.Ternary expr) {
+            return parenthesize("ternary", expr.expression, expr.left, expr.right);
+        }
+
+        @Override
         public String visitGroupingExpr(Expr.Grouping expr) {
             return parenthesize("group", expr.expression);
         }
@@ -47,6 +52,11 @@ class AstPrinter {
         @Override
         public String visitBinaryExpr(Expr.Binary expr) {
             return expr.left.accept(this) + " " + expr.right.accept(this) + " " + expr.operator.lexeme;
+        }
+
+        @Override
+        public String visitTernaryExpr(Expr.Ternary expr) {
+            return expr.expression.accept(this) + " ? " + expr.left.accept(this) + " : " + expr.right.accept(this);
         }
 
         @Override

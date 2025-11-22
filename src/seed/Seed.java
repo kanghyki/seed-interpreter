@@ -17,6 +17,7 @@ public class Seed {
         if (args.length > 0) {
             runFile(args[0]);
         } else {
+            System.out.println("Seed Interpreter");
             runPrompt();
         }
     }

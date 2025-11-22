@@ -3,6 +3,7 @@ package seed;
 abstract class Expr {
     interface Visitor<R> {
         R visitBinaryExpr(Binary expr);
+        R visitTernaryExpr(Ternary expr);
         R visitGroupingExpr(Grouping expr);
         R visitLiteralExpr(Literal expr);
         R visitUnaryExpr(Unary expr);
@@ -22,6 +23,23 @@ abstract class Expr {
         @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitBinaryExpr(this);
+        }
+    }
+
+    static class Ternary extends Expr {
+        final Expr expression;
+        final Expr left;
+        final Expr right;
+
+        Ternary(Expr expression, Expr left, Expr right) {
+            this.expression = expression;
+            this.left = left;
+            this.right = right;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitTernaryExpr(this);
         }
     }
 

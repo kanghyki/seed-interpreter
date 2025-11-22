@@ -4,6 +4,18 @@ import java.util.List;
 
 import static seed.TokenType.*;
 
+/*
+ * expression -> ternary ("," ternary )*;
+ * ternary -> eqaulity ("?" ternary ":" ternary )*;
+ * eqaulity -> comparison (("!=" | "==") comparison )*;
+ * comparison -> term ( ( ">" | ">=" | "<"  | "<=" ) term )*;
+ * term -> factor ( ( "/" | "*" ) unary )*;
+ * factor -> unary ( ( "/" | "*" ) unary )*;
+ * unary -> ( "!" | "-" ) unary | primary;
+ * comparison -> term ( ( ">" | ">=" | "<"  | "<=" ) term )*;
+ * primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")";
+ */
+
 class Parser {
     private static class ParseError extends RuntimeException {}
 
@@ -23,16 +35,35 @@ class Parser {
         }
     }
 
-    /*
-     * expression -> equality;
-     */
     private Expr expression() {
-        return equality();
+        if (check(STAR) || check(SLASH)) {
+            Token token = advance();
+            expression();
+            throw error(token, "can't use operator here.");
+        }
+
+        Expr expr = ternary();
+
+        while (match(COMMA)) {
+            expr = ternary();
+        }
+
+        return expr;
     }
 
-    /*
-     * eqaulity -> comparison (("!=" | "==") comparison )*;
-     */
+    private Expr ternary() {
+        Expr expr = equality();
+
+        if (match(QUESTION_MARK)) {
+            Expr left = ternary();
+            consume(COLON, "Expect ':' after expression.");
+            Expr right = ternary();
+            expr = new Expr.Ternary(expr, left, right);
+        }
+
+        return expr;
+    }
+
     private Expr equality() {
         Expr expr = comparison();
 
@@ -45,9 +76,6 @@ class Parser {
         return expr;
     }
 
-    /*
-     * comparison -> term ( ( ">" | ">=" | "<"  | "<=" ) term )*;
-     */
     private Expr comparison() {
         Expr expr = term();
 
@@ -60,9 +88,6 @@ class Parser {
         return expr;
     }
 
-    /*
-     * term -> factor ( ( "/" | "*" ) unary )*;
-     */
     private Expr term() {
         Expr expr = factor();
 
@@ -75,9 +100,6 @@ class Parser {
         return expr;
     }
 
-    /*
-     * factor -> unary ( ( "/" | "*" ) unary )*;
-     */
     private Expr factor() {
         Expr expr = unary();
 
@@ -90,9 +112,6 @@ class Parser {
         return expr;
     }
 
-    /*
-     * unary -> ( "!" | "-" ) unary | primary;
-     */
     private Expr unary() {
         if (match(BANG, MINUS)) {
             Token operator = previous();
@@ -103,9 +122,6 @@ class Parser {
         return primary();
     }
 
-    /*
-     * primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")";
-     */
     private Expr primary() {
         if (match(FALSE)) return new Expr.Literal(false);
         if (match(TRUE)) return new Expr.Literal(true);
@@ -121,6 +137,10 @@ class Parser {
 
         throw error(peek(), "Expect expression.");
     }
+
+    /*
+     * Utility
+     */
 
     private boolean match(TokenType... types) {
         for (TokenType type : types) {
