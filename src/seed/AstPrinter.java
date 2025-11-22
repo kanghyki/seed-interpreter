@@ -2,6 +2,10 @@ package seed;
 
 class AstPrinter {
     static class DefaultAstPrinter implements Expr.Visitor<String> {
+        String print(Expr expr) {
+            return expr.accept(this);
+        }
+
         @Override
         public String visitBinaryExpr(Expr.Binary expr) {
             return parenthesize(expr.operator.lexeme, expr.left, expr.right);
@@ -36,6 +40,10 @@ class AstPrinter {
     }
 
     static class RpnAstPrinter implements Expr.Visitor<String> {
+        String print(Expr expr) {
+            return expr.accept(this);
+        }
+
         @Override
         public String visitBinaryExpr(Expr.Binary expr) {
             return expr.left.accept(this) + " " + expr.right.accept(this) + " " + expr.operator.lexeme;
@@ -48,7 +56,7 @@ class AstPrinter {
 
         @Override
         public String visitUnaryExpr(Expr.Unary expr) {
-            return expr.operator.lexeme;
+            return expr.operator.lexeme + " " + expr.right.toString();
         }
 
         @Override
@@ -64,8 +72,7 @@ class AstPrinter {
             new Token(TokenType.STAR, "*", null, 1),
             new Expr.Grouping(new Expr.Literal(45.67))
         );
-
-        System.out.println(expression.accept(new DefaultAstPrinter()));
+        System.out.println(new DefaultAstPrinter().print(expression));
 
         Expr expression2 = new Expr.Binary(
             new Expr.Grouping(
@@ -84,7 +91,7 @@ class AstPrinter {
                 )
             )
         );
-        System.out.println(expression2.accept(new RpnAstPrinter()));
+        System.out.println(new RpnAstPrinter().print(expression2));
     }
 
 }

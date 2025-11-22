@@ -27,8 +27,6 @@ public class GenerateAst {
         // Write the package declaration and imports
         write(writer, 0, "package seed;");
         write(writer, 0, "");
-        write(writer, 0, "import java.util.List;");
-        write(writer, 0, "");
 
         // Write abstract class declaration
         write(writer, 0, "abstract class " + baseName + " {");
