@@ -11,7 +11,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Seed {
+    private static final Interpreter interpreter = new Interpreter();
     static boolean hadError = false;
+    static boolean hadRuntimeError = false;
 
     public static void main(String[] args) throws IOException {
         if (args.length > 0) {
@@ -27,6 +29,7 @@ public class Seed {
         run(new String(bytes, Charset.defaultCharset()));
 
         if (hadError) System.exit(65);
+        if (hadRuntimeError) System.exit(70);
     }
 
     private static void runPrompt() throws IOException {
@@ -75,7 +78,8 @@ public class Seed {
 
         if (hadError) return;
 
-        System.out.println(new AstPrinter.DefaultAstPrinter().print(expression));
+        interpreter.interpret(expression);
+        // System.out.println(new AstPrinter.DefaultAstPrinter().print(expression));
     }
 
     static void error(int line, String message) {
@@ -93,5 +97,10 @@ public class Seed {
         } else {
             report(token.line, " at '" + token.lexeme + "'", message);
         }
+    }
+
+    static void runtimeError(RuntimeError error) {
+        System.err.println("[line " + error.token.line + "] Runtime Error" + ": " + error.getMessage());
+        hadRuntimeError = true;
     }
 }
