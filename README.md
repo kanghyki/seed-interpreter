@@ -26,5 +26,5 @@ Copyright (c) 2015 Robert Nystrom
 make run
 
 # Run with a script file
-make run [file:example.seed]\
+make run seed/example.seed
 ```
