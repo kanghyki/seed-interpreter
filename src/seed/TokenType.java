@@ -44,7 +44,7 @@ enum TokenType {
     SUPER,
     THIS,
     TRUE,
-    LET,
+    VAR,
     WHILE,
 
     EOF

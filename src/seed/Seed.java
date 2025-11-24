@@ -43,7 +43,7 @@ public class Seed {
         String lines = "";
 
         for (;;) {
-            System.out.print(comments > 0 ? "... " : ">>> ");
+            System.out.print(comments > 0 ? "... " : "> ");
 
             line = reader.readLine();
             if (line == null) break;
@@ -74,12 +74,11 @@ public class Seed {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
         Parser parser = new Parser(tokens);
-        Expr expression = parser.parse();
+        List<Stmt> statements = parser.parse();
 
         if (hadError) return;
 
-        interpreter.interpret(expression);
-        System.out.println(new AstPrinter.DefaultAstPrinter().print(expression));
+        interpreter.interpret(statements);
     }
 
     static void error(int line, String message) {

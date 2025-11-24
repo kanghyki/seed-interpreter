@@ -1,19 +1,30 @@
 package seed;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static seed.TokenType.*;
 
 /*
- * expression -> ternary ("," ternary )*;
- * ternary -> eqaulity ("?" ternary ":" ternary )*;
- * eqaulity -> comparison (("!=" | "==") comparison )*;
- * comparison -> term ( ( ">" | ">=" | "<"  | "<=" ) term )*;
- * term -> factor ( ( "/" | "*" ) unary )*;
- * factor -> unary ( ( "/" | "*" ) unary )*;
- * unary -> ( "!" | "-" ) unary | primary;
- * comparison -> term ( ( ">" | ">=" | "<"  | "<=" ) term )*;
- * primary -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")";
+ * program      -> declaration* EOF;
+ * declaration  -> varDecl | statement;
+ * varDecl      -> "var" IDENTIFIER ( "=" expression )? ";";
+ * statement    -> exprStmt | printStmt;
+ * exprStmt     -> expression ";";
+ * printStmt    -> ";";
+ *
+ * expression   -> assignment;
+ * assignment   -> ternary ("=" assignment)*;
+ * ternary      -> eqaulity ("?" ternary ":" ternary)*;
+ * eqaulity     -> comparison (("!=" | "==") comparison )*;
+ * comparison   -> term ( ( ">" | ">=" | "<"  | "<=" ) term )*;
+ * term         -> factor ( ( "/" | "*" ) unary )*;
+ * factor       -> unary ( ( "/" | "*" ) unary )*;
+ * unary        -> ( "!" | "-" ) unary | primary;
+ * comparison   -> term ( ( ">" | ">=" | "<"  | "<=" ) term )*;
+ * primary      -> NUMBER | STRING
+ *              | "true" | "false" | "nil"
+ *              | "(" expression ")" | IDENTIFIER;
  */
 
 class Parser {
@@ -26,26 +37,78 @@ class Parser {
         this.tokens = tokens;
     }
 
-    Expr parse() {
+    // program
+    List<Stmt> parse() {
+        List<Stmt> statements = new ArrayList<>();
+        while (!isAtEnd()) {
+            statements.add(declaration());
+        }
+
+        return statements;
+    }
+
+    private Stmt declaration() {
         try {
-            return expression();
+            if (match(VAR)) return varDeclaration();
+            return statement();
         } catch (ParseError error) {
             synchronize();
             return null;
         }
     }
 
-    private Expr expression() {
-        if (check(STAR) || check(SLASH)) {
-            Token token = advance();
-            expression();
-            throw error(token, "can't use operator here.");
-        }
+    private Stmt varDeclaration() {
+        Token name = consume(IDENTIFIER, "Expect variable name.");
 
-        Expr expr = ternary();
+        Expr initializer = null;
+        if (match(EQUAL)) {
+            initializer = expression();
+        }
+        consume(SEMICOLON, "Expect ';' after variable declaration.");
+        return new Stmt.Var(name, initializer);
+    }
+
+    private Stmt statement() {
+        if (match(PRINT)) return printStatement();
+
+        return expressionStatement();
+    }
+
+    private Stmt expressionStatement() {
+        Expr expr = expression();
+        consume(SEMICOLON, "Expect ';' after expression.");
+        return new Stmt.Expression(expr);
+    }
+
+    private Stmt printStatement() {
+        Expr value = expression();
+        consume(SEMICOLON, "Expect ';' after value.");
+        return new Stmt.Print(value);
+    }
+
+    private Expr expression() {
+        Expr expr = assignment();
 
         while (match(COMMA)) {
-            expr = ternary();
+            expr = assignment();
+        }
+
+        return expr;
+    }
+
+    private Expr assignment() {
+        Expr expr = ternary();
+
+        if (match(EQUAL)) {
+            Token equals = previous();
+            Expr value = assignment();
+
+            if (expr instanceof Expr.Variable) {
+                Token name = ((Expr.Variable)expr).name;
+                return new Expr.Assign(name, value);
+            }
+
+            error(equals, "Invalid assignment target.");
         }
 
         return expr;
@@ -128,6 +191,9 @@ class Parser {
         if (match(NIL)) return new Expr.Literal(null);
 
         if (match(NUMBER, STRING)) return new Expr.Literal(previous().literal);
+        if (match(IDENTIFIER)) {
+            return new Expr.Variable(previous());
+        }
 
         if (match(LEFT_PAREN)) {
             Expr expr = expression();
@@ -194,7 +260,7 @@ class Parser {
             switch (peek().type) {
                 case CLASS:
                 case FUNCTION:
-                case LET:
+                case VAR:
                 case FOR:
                 case IF:
                 case WHILE:
