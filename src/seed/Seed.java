@@ -79,7 +79,7 @@ public class Seed {
         if (hadError) return;
 
         interpreter.interpret(expression);
-        // System.out.println(new AstPrinter.DefaultAstPrinter().print(expression));
+        System.out.println(new AstPrinter.DefaultAstPrinter().print(expression));
     }
 
     static void error(int line, String message) {
