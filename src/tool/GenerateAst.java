@@ -23,6 +23,7 @@ public class GenerateAst {
         ));
 
         defineAst(outputDir, "Stmt", Arrays.asList(
+            "Block      : List<Stmt> statements",
             "Expression : Expr expression",
             "Print      : Expr expression",
             "Var        : Token name, Expr initializer"
@@ -35,6 +36,8 @@ public class GenerateAst {
 
         // Write the package declaration and imports
         write(writer, 0, "package seed;");
+        write(writer, 0, "");
+        write(writer, 0, "import java.util.List;");
         write(writer, 0, "");
 
         // Write abstract class declaration
