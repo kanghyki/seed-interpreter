@@ -13,7 +13,7 @@ import static seed.TokenType.*;
  * exprStmt     -> expression ";";
  * printStmt    -> ";";
  *
- * expression   -> assignment;
+ * expression   -> assignment ("," assignment)*;
  * assignment   -> ternary ("=" assignment)*;
  * ternary      -> eqaulity ("?" ternary ":" ternary)*;
  * eqaulity     -> comparison (("!=" | "==") comparison )*;
